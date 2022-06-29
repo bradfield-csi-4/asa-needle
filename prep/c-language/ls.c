@@ -10,101 +10,70 @@
 
 #undef DIRSIZ
 #define DIRSIZ 14
-void fsize(char *);
+
+void ls(char *);
+void dirwalk(char *, void (*fcn)(char *));
+
+// int main(void) {
+//   DIR *d;
+//   struct dirent *dir;
+//   d = opendir(".");
+//   if (d) {
+//     while ((dir = readdir(d)) != NULL) {
+//       printf("%s\n", dir->d_name);
+//     }
+//     closedir(d);
+//   }
+//   return(0);
+// }
 
 int main (int argc, char **argv)
 {
-	if (argc == 1)
-		fsize(".");
-	else
-		while (--argc > 0)
-			fsize(*++argv);
+	if (argc == 1){
+		ls(".");
+	} else {
+		while (--argc > 0) {
+			++argv;
+			ls(*argv);
+		}
+	}
 	return 0;
 }
 
-void dirwalk(char *, void (*fcn)(char *));
 
-void fsize(char *name)
+void ls(char *name)
 {
 	struct stat stbuf;
-
+	char content_path[1000];
 	if (stat(name, &stbuf) == -1) {
-		fprintf(stderr, "fsize: can't access %s\n", name);
+		fprintf(stderr, "ls: can't access %s\n", name);
 		return;
 	}
-	if ((stbuf.st_mode & S_IFMT) == S_IFDIR)
-		dirwalk(name, fsize);
-	printf("%lld %s\n", stbuf.st_size, name);
-}
-
-#define MAX_PATH 1024
- 
-void dirwalk(char *dir, void (*fcn)(char *))
-{
-	char name[MAX_PATH];
-	Dirent *dp;
-	MY_DIR *dfd;
-
-	if ((dfd = my_opendir(dir)) == NULL) { 
-		fprintf(stderr, "dirwalk: can't open %s\n", dir);
-		return;
-	}
-	while ((dp = my_readdir(dfd)) != NULL) {
-		if (strcmp(dp->name, ".") == 0
-		 || strcmp(dp->name, "..") == 0)
-			continue;
-		if (strlen(dir) + strlen(dp->name) + 2 > sizeof(name))
-			fprintf(stderr, "dirwalk: name %s/%s./too long\n",
-				dir, dp->name);
-		else {
-			sprintf(name, "%s/%s", dir, dp->name);
-			(*fcn)(name);
+	if ((stbuf.st_mode & S_IFMT) == S_IFDIR) { 
+		DIR *d;
+		struct dirent *dir;
+		struct stat *file_info;
+		d = opendir(name);
+		if (d) {
+			printf("%s\n", name);
+			while ((dir = readdir(d)) != NULL) {
+				if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+					continue;
+				if (strlen(name) + strlen(dir->d_name) + 2 > sizeof(content_path))
+					fprintf(stderr, "dirwalk: name %s/%s./too long\n", name, dir->d_name);
+				else {
+					file_info = (struct stat *)malloc(sizeof(struct stat));
+					sprintf(content_path, "%s/%s", name, dir->d_name);
+					stat(content_path, file_info);
+					printf("%lld %s\n", file_info->st_size, dir->d_name);
+					free(file_info);
+				}
+			}
+			closedir(d);
 		}
-	}
-	my_closedir(dfd);
-}
-
-int fstat(int fd, struct stat *);
-
-MY_DIR *my_opendir(char *dirname)
-{
-	int fd;
-	struct stat stbuf;
-	MY_DIR *dp;
-	if ((fd = open(dirname, O_RDONLY, 0)) == -1
-	 || fstat(fd, &stbuf) == -1
-	 || (stbuf.st_mode & S_IFMT) != S_IFDIR
-	 || (dp = (MY_DIR *) malloc(sizeof(MY_DIR))) == NULL)
-		return NULL;
-	dp->fd = fd;
-	return dp;
-}
-
-void my_closedir(MY_DIR *dp)
-{
-	if (dp) {
-		close(dp->fd);
-		free(dp);
+	} else {
+		printf("%s\n", name);
 	}
 }
 
-#include <sys/dir.h>
-
-Dirent *my_readdir
-(MY_DIR *dp)
-{
-	struct direct dirbuf;
-	static Dirent d;
-
-	while (read(dp->fd, (char *) &dirbuf, sizeof(dirbuf))
-					== sizeof(dirbuf)) {
-		if (dirbuf.d_ino == 0)
-			continue;
-		d.ino = dirbuf.d_ino;
-		strncpy(d.name, dirbuf.d_name, DIRSIZ);
-		d.name[DIRSIZ] = '\0';
-		return &d;
-	}
-	return NULL;
-}
 
