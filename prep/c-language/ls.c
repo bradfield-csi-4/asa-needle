@@ -13,12 +13,18 @@
 
 enum _flags {
 	_SIZE = 01,
-	// _HUMAN = 02,
+	_HUMAN_READABLE = 02,
 	// _ERROR = 010,
 };
 
+struct Readable_Name {
+	int size;
+	char letter;
+};
+
 void ls(char *, int);
-void dirwalk(char *, void (*fcn)(char *));
+void dirwalk(char *, void (*fcn)(char *)); 
+void make_readable(int, struct Readable_Name *);
 
 int main (int argc, char **argv)
 {
@@ -35,6 +41,10 @@ int main (int argc, char **argv)
 					switch(cur_char){
 						case 'l':
 							flags = flags | _SIZE;
+							break;
+						case 'h':
+							flags = flags | _HUMAN_READABLE;
+							break;
 					}
 				}
 			} else {
@@ -56,7 +66,7 @@ void ls(char *name, int flags)
 		fprintf(stderr, "ls: can't access %s\n", name);
 		return;
 	}
-	if ((stbuf.st_mode & S_IFMT) == S_IFDIR) { 
+	if ((stbuf.st_mode & S_IFMT) != S_IFDIR) { 
 		DIR *d;
 		struct dirent *dir;
 		struct stat *file_info;
@@ -73,7 +83,14 @@ void ls(char *name, int flags)
 					file_info = (struct stat *)malloc(sizeof(struct stat));
 					sprintf(content_path, "%s/%s", name, dir->d_name);
 					stat(content_path, file_info);
-					printf("%lld %s\n", file_info->st_size, dir->d_name);
+					if (flags & _HUMAN_READABLE){
+						struct Readable_Name Readable;
+						make_readable(file_info->st_size, &Readable);
+						printf("%d%c %s\n", Readable.size, Readable.letter, dir->d_name);
+					} else {
+						printf("%lld %s\n", file_info->st_size, dir->d_name);
+					}
+					
 					free(file_info);
 				} else {
 					printf("%s\n", dir->d_name);
@@ -86,4 +103,16 @@ void ls(char *name, int flags)
 	}
 }
 
-
+void make_readable(int size, struct Readable_Name * ptr){
+	char mag_char[] = "1KMGT";
+	char *cur_mag = mag_char;
+	int i =0;
+	while(size > 1000){
+		size = size / 1000;
+		cur_mag += 1;
+	}
+	(*ptr).size = size;
+	if (*cur_mag != '1'){
+		(*ptr).letter = cur_mag[0];
+	}
+}
