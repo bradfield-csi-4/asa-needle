@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h> 
-#include <fcntl.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
-#include "dirent.h"
 #include <stdlib.h>
 
 #undef DIRSIZ
@@ -14,7 +10,6 @@
 enum _flags {
 	_SIZE = 01,
 	_HUMAN_READABLE = 02,
-	// _ERROR = 010,
 };
 
 struct Readable_Size {
@@ -25,9 +20,10 @@ struct Readable_Size {
 void ls(char *, int);
 void dirwalk(char *, void (*fcn)(char *)); 
 void make_readable(int, struct Readable_Size *);
-void print_with_size( char * dir_name, long long size, int flags);
+void print_with_size(char * dir_name, long long size, int flags);
 void get_content_path(char *name, char * dir_name, char * content_path);
 int get_file_size(char path[]);
+void print_dir(char * name, int flags);
 
 int get_flag(char **ptr);
 
@@ -71,8 +67,6 @@ int get_flag(char **ptr){
 void ls(char *name, int flags)
 {
 	struct stat stbuf;
-	DIR *d;
-	struct dirent *dir;
 	if (stat(name, &stbuf) == -1) {
 		fprintf(stderr, "ls: can't access %s\n", name);
 		return;
@@ -83,9 +77,16 @@ void ls(char *name, int flags)
 		} else {
 			printf("%s\n", name);
 		}
-		return;
+	} else {
+		print_dir(name, flags);
 	}
 	
+
+}
+
+void print_dir(char * name, int flags){
+	DIR *d;
+	struct dirent *dir;
 	d = opendir(name);
 	if (d == NULL){
 		perror("Error open directory");
@@ -107,6 +108,7 @@ void ls(char *name, int flags)
 	}
 	closedir(d);
 }
+
 
 void make_readable(int size, struct Readable_Size * ptr){
 	char mag_char[] = "1KMGT";
