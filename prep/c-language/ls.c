@@ -25,7 +25,6 @@ void print_with_size(char * dir_name, long long size, int flags);
 void get_content_path(char *name, char * dir_name, char * content_path);
 int get_file_size(char path[]);
 void print_dir(char * name, int flags);
-
 int get_flag(char **ptr);
 
 int main (int argc, char **argv)
@@ -74,15 +73,13 @@ void ls(char *name, int flags)
 	}
 	if ((stbuf.st_mode & S_IFMT) != S_IFDIR) {
 		if (flags & _SIZE){
-			printf("%lld %s\n", stbuf.st_size, name);
+			printf("%lld %s\n\n", stbuf.st_size, name);
 		} else {
-			printf("%s\n", name);
+			printf("%s\n\n", name);
 		}
 	} else {
 		print_dir(name, flags);
 	}
-	
-
 }
 
 void print_dir(char * name, int flags){
@@ -108,6 +105,7 @@ void print_dir(char * name, int flags){
 		}
 	}
 	closedir(d);
+	printf("\n");
 }
 
 void make_readable(int size, struct Readable_Size * ptr){
@@ -126,7 +124,7 @@ void make_readable(int size, struct Readable_Size * ptr){
 
 void get_content_path(char *name, char * dir_name, char * content_path){
 	if (strlen(name) + strlen(dir_name) + 2 > MAXSIZE){
-		fprintf(stderr, "dirwalk: name %s/%s./too long\n", name, dir_name);
+		fprintf(stderr, "get content path: pathname %s/%s is too long\n", name, dir_name);
 	}
 	sprintf(content_path, "%s/%s", name, dir_name);
 }
