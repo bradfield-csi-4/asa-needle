@@ -10,22 +10,25 @@
 
 #undef DIRSIZ
 #define DIRSIZ 14
-
+#define MAXSIZE 100
 enum _flags {
 	_SIZE = 01,
 	_HUMAN_READABLE = 02,
 	// _ERROR = 010,
 };
 
-struct Readable_Name {
+struct Readable_Size {
 	int size;
 	char letter;
 };
 
 void ls(char *, int);
 void dirwalk(char *, void (*fcn)(char *)); 
-void make_readable(int, struct Readable_Name *);
-void print_with_size(char *, struct dirent * dir, int flags);
+void make_readable(int, struct Readable_Size *);
+void print_with_size( char * dir_name, long long size, int flags);
+void get_content_path(char *name, char * dir_name, char * content_path);
+int get_file_size(char path[]);
+
 int get_flag(char **ptr);
 
 int main (int argc, char **argv)
@@ -92,7 +95,11 @@ void ls(char *name, int flags)
 	while ((dir = readdir(d)) != NULL) {
 		if ((strcmp(dir->d_name, ".")) != 0 && (strcmp(dir->d_name, "..") != 0)){
 			if (flags & _SIZE){
-				print_with_size(name, dir, flags);
+				char content_path[MAXSIZE];
+				long long size;
+				get_content_path(name, dir->d_name, content_path);
+				size = get_file_size(content_path);
+				print_with_size(content_path, size, flags);
 			} else {
 				printf("%s\n", dir->d_name);
 			}
@@ -101,7 +108,7 @@ void ls(char *name, int flags)
 	closedir(d);
 }
 
-void make_readable(int size, struct Readable_Name * ptr){
+void make_readable(int size, struct Readable_Size * ptr){
 	char mag_char[] = "1KMGT";
 	char *cur_mag = mag_char;
 	int i =0;
@@ -115,22 +122,28 @@ void make_readable(int size, struct Readable_Name * ptr){
 	}
 }
 
-void print_with_size(char * name, struct dirent * dir, int flags){
-	char content_path[1000];
+void get_content_path(char *name, char * dir_name, char * content_path){
+	if (strlen(name) + strlen(dir_name) + 2 > MAXSIZE){
+		fprintf(stderr, "dirwalk: name %s/%s./too long\n", name, dir_name);
+	}
+	sprintf(content_path, "%s/%s", name, dir_name);
+}
+
+int get_file_size(char path[]){
 	struct stat *file_info;
-	if (strlen(name) + strlen(dir->d_name) + 2 > sizeof(content_path)){
-		fprintf(stderr, "dirwalk: name %s/%s./too long\n", name, dir->d_name);
-	}
 	file_info = (struct stat *)malloc(sizeof(struct stat));
-	sprintf(content_path, "%s/%s", name, dir->d_name);
-	stat(content_path, file_info);
-	if (flags & _HUMAN_READABLE){
-		struct Readable_Name Readable;
-		make_readable(file_info->st_size, &Readable);
-		printf("%d%c %s\n", Readable.size, Readable.letter, dir->d_name);
-	} else {
-		printf("%lld %s\n", file_info->st_size, dir->d_name);
-	}
-	
+	stat(path, file_info);
+	long long size = file_info->st_size;
 	free(file_info);
+	return size;
+}
+
+void print_with_size( char * dir_name, long long size, int flags){
+	if (flags & _HUMAN_READABLE){
+		struct Readable_Size Readable;
+		make_readable(size, &Readable);
+		printf("%d%c %s\n", Readable.size, Readable.letter, dir_name);
+	} else {
+		printf("%lld %s\n", size, dir_name);
+	}
 }
