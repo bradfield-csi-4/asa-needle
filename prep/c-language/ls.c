@@ -7,6 +7,7 @@
 #undef DIRSIZ
 #define DIRSIZ 14
 #define MAXSIZE 100
+
 enum _flags {
 	_SIZE = 01,
 	_HUMAN_READABLE = 02,
@@ -108,7 +109,6 @@ void print_dir(char * name, int flags){
 	}
 	closedir(d);
 }
-
 
 void make_readable(int size, struct Readable_Size * ptr){
 	char mag_char[] = "1KMGT";
