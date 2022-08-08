@@ -21,7 +21,7 @@ struct Readable_Size {
 void ls(char *, int);
 void dirwalk(char *, void (*fcn)(char *)); 
 void make_readable(int, struct Readable_Size *);
-void print_with_size(char * dir_name, long long size, int flags);
+void print_with_size(char * file_name, long long size, int flags);
 void get_content_path(char *name, char * dir_name, char * content_path);
 int get_file_size(char path[]);
 void print_dir(char * name, int flags);
@@ -90,7 +90,7 @@ void print_dir(char * name, int flags){
 		perror("Error open directory");
 		return;
 	}
-	printf("%s\n", name);
+	printf("%s:\n", name);
 	while ((dir = readdir(d)) != NULL) {
 		if ((strcmp(dir->d_name, ".")) != 0 && (strcmp(dir->d_name, "..") != 0)){
 			if (flags & _SIZE){
@@ -98,7 +98,7 @@ void print_dir(char * name, int flags){
 				long long size;
 				get_content_path(name, dir->d_name, content_path);
 				size = get_file_size(content_path);
-				print_with_size(content_path, size, flags);
+				print_with_size(dir->d_name, size, flags);
 			} else {
 				printf("%s\n", dir->d_name);
 			}
@@ -138,12 +138,12 @@ int get_file_size(char path[]){
 	return size;
 }
 
-void print_with_size( char * dir_name, long long size, int flags){
+void print_with_size( char * file_name, long long size, int flags){
 	if (flags & _HUMAN_READABLE){
 		struct Readable_Size Readable;
 		make_readable(size, &Readable);
-		printf("%d%c %s\n", Readable.size, Readable.letter, dir_name);
+		printf("%d%c %s\n", Readable.size, Readable.letter, file_name);
 	} else {
-		printf("%lld %s\n", size, dir_name);
+		printf("%lld %s\n", size, file_name);
 	}
 }
