@@ -44,17 +44,17 @@ void test_pangram_phrase(void) {
 int main(void) {
     UNITY_BEGIN();
 
-    RUN_TEST(test_sum_to_0);
-    RUN_TEST(test_sum_to_1);
-    RUN_TEST(test_sum_to_3);
-    RUN_TEST(test_sum_to_10);
-    RUN_TEST(test_sum_to_1000);
+    // RUN_TEST(test_sum_to_0);
+    // RUN_TEST(test_sum_to_1);
+    // RUN_TEST(test_sum_to_3);
+    // RUN_TEST(test_sum_to_10);
+    // RUN_TEST(test_sum_to_1000);
 
-    RUN_TEST(test_convert_0);
-    RUN_TEST(test_convert_1);
-    RUN_TEST(test_convert_110);
-    RUN_TEST(test_convert_1111);
-    RUN_TEST(test_convert_10101101);
+    // RUN_TEST(test_convert_0);
+    // RUN_TEST(test_convert_1);
+    // RUN_TEST(test_convert_110);
+    // RUN_TEST(test_convert_1111);
+    // RUN_TEST(test_convert_10101101);
 
     RUN_TEST(test_pangram_empty);
     RUN_TEST(test_pangram_alpha);

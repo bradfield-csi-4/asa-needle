@@ -1,21 +1,8 @@
 section .text
 global pangram
 
-; for each letter, check the memory address that corresponds to that letter. 
-; add it if it's not there 
-; finally, check to make sure all holes are filled
-
-; use one register for lower case, one for uppercase, then AND the two together to get the result
-; a = 97
-; lower case register then gets 1 added to i
-; c = 99
-; 99 - 97 = 2
-; lower case register gets 8 added to it (100, or 1 << 2)
-
-
-; A-Z, 65 - 90, 01000001, 01011010
-; a-z, 97 - 122 01100001, 01111010
-
+; A-Z, 65 - 90, 01000001 - 01011010
+; a-z, 97 - 122 01100001 - 01111010
 
 pangram:		
 		mov rax, 0 					; final boolean result
