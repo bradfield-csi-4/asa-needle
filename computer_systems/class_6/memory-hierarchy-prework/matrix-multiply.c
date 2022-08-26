@@ -40,10 +40,11 @@ void fast_matrix_multiply(double **C, double **A, double **B, int a_rows, int a_
         int k;
         double *b_ptr = *(B+j);
         for (k = 0; k+3 < a_cols; k += 4) {
-          *(c_ptr+k) += *b_ptr * a_val;
-          *(c_ptr+k+1) += *(b_ptr+1) * a_val;
-          *(c_ptr+k+2) += *(b_ptr+2) * a_val;
-          *(c_ptr+k+3) += *(b_ptr+3) * a_val;
+          double *c_ptr_k = c_ptr+k;
+          *(c_ptr_k) += *b_ptr * a_val;
+          *(c_ptr_k+1) += *(b_ptr+1) * a_val;
+          *(c_ptr_k+2) += *(b_ptr+2) * a_val;
+          *(c_ptr_k+3) += *(b_ptr+3) * a_val;
           b_ptr += 4;
         }
         for (; k < a_cols; k++) {
