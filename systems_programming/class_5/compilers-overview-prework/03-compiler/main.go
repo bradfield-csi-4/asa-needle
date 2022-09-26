@@ -10,15 +10,10 @@ func generateBytecode(src string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	// fset := token.NewFileSet()
-	// ast.Print(fset, node)
-	// fmt.Printf("")
-
 	asm, err := compile(node)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("ASSEMBLY:\n%s\n", asm)
 	bytecode, err := assemble(asm)
 	if err != nil {
 		return nil, err
@@ -51,7 +46,6 @@ func f(x, y byte) byte {
 
 func main() {
 	bytecode, err := generateBytecode(src)
-	fmt.Printf("bytecode: %x\n", bytecode)
 	if err != nil {
 		log.Fatal(err)
 	}
