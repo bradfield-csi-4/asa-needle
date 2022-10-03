@@ -11,7 +11,7 @@ pangram:
 		mov rdx, 0					; store current letter
 START_LOOP:
 		mov r11, 1 					; represents the letter a/A  
-		movzx edx, byte [rdi] 			; move letter to rdx
+		movzx edx, byte [rdi] 		; move letter to rdx
 		add qword rdi, 1 			; increment string input pointer
 		cmp rdx, byte 0x00			; if end of string, return result
 		je STORE_RESULT 			;
@@ -21,14 +21,14 @@ SHIFT_LOOP:
 		cmp byte dl, 0x00 			; if it is a/A, then it will leave r11 as is at 1, else
 		je INSERT_LETTER 			; 
 		shl r11,  1					; ...it will shift the 1 bit left equal to the letters distance from a/A
-		jmp SHIFT_LOOP;
+		jmp SHIFT_LOOP				;
 INSERT_LETTER:
 		or r10, r11 				; add letter if it doesn't exist to r10 
-		jmp START_LOOP;
+		jmp START_LOOP				;
 STORE_RESULT:
 		and r10,  rsi				; remove irrelevant data
 		cmp r10, rsi 				; return false if r10 does not contain every letter, else
-		jne END;
+		jne END						;
 		mov rax, 1 					; ...return true
 END: 	
 		ret

@@ -17,7 +17,7 @@ LOOP_END:
 
 ; O(1) solution
 ; sum_to_n: 
-;     mov qword rax, rdi ; add n to r10
+;   mov qword rax, rdi ; add n to r10
 ; 	add qword rax, 1 ; add 1
 ; 	imul qword rax, rdi ; times n
 ; 	shr qword rax, 1 ; divide by two

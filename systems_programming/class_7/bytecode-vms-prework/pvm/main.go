@@ -13,7 +13,6 @@ func check(e error) {
 
 func main() {
 	fmt.Println("I am the PVM")
-
 	f, err := os.Open("../survivors/1.pyc")
 	check(err)
 	defer f.Close()

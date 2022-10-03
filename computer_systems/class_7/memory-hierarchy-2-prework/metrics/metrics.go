@@ -41,7 +41,7 @@ type User struct {
 	payments []Payment
 }
 
-func OLD_AverageAge(userData UserData) float64 {
+func V1_AverageAge(userData UserData) float64 {
 	average, count := 0.0, 0.0
 	age_len := len(userData.ages)
 	for i := 0; i < age_len; i++ {

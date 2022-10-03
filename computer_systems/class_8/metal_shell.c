@@ -18,6 +18,13 @@ void sighandler(int dummy);
 
 // add a tokenize function
 
+struct command {
+    char * command_name;
+    char ** args;
+};
+
+enum ProcessResponse{Parent, Child, ChildError};
+
 int main (){
     int c, i;
     i = 0;
@@ -29,11 +36,10 @@ int main (){
             signal(SIGINT, sighandler);
             int result = handle_process(input);
             signal(SIGINT, SIG_DFL);
-
-            if (result < 0){
-                printf("ending loop due to ctrl-c\n");
-                break;
+            if (result == 0){
+                exit(0);
             }
+
             input[0] = '\0';
             i = 0;
             printf("🤟 ");
@@ -66,15 +72,15 @@ int handle_process(char input[100]){
     }
 
     struct sigaction *myaction;
-
+    enum ProcessResponse process_response;
     if (fork() == 0){
         // CHILD
-        int result = handle_input(token, input);
-        exit(0);
+        process_response = handle_input(token, input);
+        return process_response;
     } else {
         // PARENT
         while ((wpid = wait(&status)) > 0);
-        return 1;
+        return 0;
     }
 }
 

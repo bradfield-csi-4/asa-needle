@@ -19,9 +19,8 @@ func Evaluate(expr ast.Expr) (int, error) {
 		basicVal, err := strconv.Atoi(myString)
 		if err != nil {
 			return 0, fmt.Errorf("failed to convert value to int")
-		} else {
-			return basicVal, nil
 		}
+		return basicVal, nil
 	} else if _, ok := iexpr.(*ast.ParenExpr); ok {
 		valX, errX := Evaluate(expr.(*ast.ParenExpr).X)
 		if errX != nil {
@@ -35,19 +34,18 @@ func Evaluate(expr ast.Expr) (int, error) {
 
 		if errX != nil || errY != nil {
 			return 0, fmt.Errorf("x: %e, y: %e", errX, errY)
-		} else {
-			switch expr.(*ast.BinaryExpr).Op.String() {
-			case "+":
-				return valX + valY, nil
-			case "-":
-				return valX - valY, nil
-			case "*":
-				return valX * valY, nil
-			case "/":
-				return valX / valY, nil
-			default:
-				return 0, fmt.Errorf("unrecognized operator")
-			}
+		}
+		switch expr.(*ast.BinaryExpr).Op.String() {
+		case "+":
+			return valX + valY, nil
+		case "-":
+			return valX - valY, nil
+		case "*":
+			return valX * valY, nil
+		case "/":
+			return valX / valY, nil
+		default:
+			return 0, fmt.Errorf("unrecognized operator")
 		}
 	}
 	return 0, fmt.Errorf("encountered node that was not a recognized type")

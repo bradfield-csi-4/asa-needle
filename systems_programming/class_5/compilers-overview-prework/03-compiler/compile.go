@@ -69,7 +69,7 @@ func compileExpr(expr ast.Expr) (string, error) {
 }
 
 func compileStmt(stmt ast.Stmt) (string, error) {
-	var istmt interface{} = stmt
+	var istmt = stmt
 	assembly := ""
 	if _, ok := istmt.(*ast.AssignStmt); ok {
 		// assume that assignment expression has one node on left hand side
