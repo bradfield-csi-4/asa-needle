@@ -159,8 +159,7 @@ class VM:
                 print('Unknown opcode {}'.format(opcode))
 
     def print_code_info(self, code):
-        print(code.co_global)
-        code = code.co_consts[0]
+        code = code.co_consts
         bytecode = iter(code.co_code)
         while True:
             try:
