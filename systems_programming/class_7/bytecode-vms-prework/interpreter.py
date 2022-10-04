@@ -18,15 +18,20 @@ def parse_pyc(f):
 
 OP = {
     'NOP': 9,
+    'BINARY_SUBSCR_LIST_INT': 20, # todo: implement
     'BINARY_DIVIDE': 21,
     'BINARY_MODULO': 22,
     'BINARY_ADD': 23,
+    'CALL_PY_WITH_DEFAULTS': 24, # todo: implement
     'PRINT_ITEM': 71,
     'PRINT_NEWLINE': 72,
     'RETURN_VALUE': 83,
     'STORE_NAME': 90,
     'LOAD_CONST': 100,
     'LOAD_NAME': 101,
+    'COMPARE_OP': 107, 
+    'POP_JUMP_IF_FALSE': 114, # todo: implement
+    'LOAD_GLOBAL': 116, # todo: implement
     'LOAD_FAST': 124,
     'CALL_FUNCTION': 131,
     'MAKE_FUNCTION': 132,
@@ -63,81 +68,98 @@ class FrameStack:
 
 class VM:
     def __init__(self):
-        self.frame = FrameStack()
+        self.frame_stack = FrameStack()
 
     def interpret(self, code):
         """
         Given a code object, interpret (evaluate) the code.
         """
-        bytecode = iter(code.co_code)
+        bytecode = code.co_code
+        pc = 0
         names = code.co_names
         consts = code.co_consts
         locals = dict()
             
         while True:
             try:
-                opcode = ord(bytecode.next())
+                opcode = ord(bytecode[pc])
+                pc += 1
             except StopIteration:
                 break
             if opcode >= HAVE_ARGUMENT:
-                oparg = ord(bytecode.next()) + (ord(bytecode.next()) << 8)
+                oparg = ord(bytecode[pc]) + (ord(bytecode[pc+1]) << 8)
+                pc += 2
 
             if opcode == OP['NOP']:
                 continue
             elif opcode == OP['BINARY_DIVIDE']:
-                x = self.frame.top().pop() 
-                y = self.frame.top().top()
+                x = self.frame_stack.top().pop() 
+                y = self.frame_stack.top().top()
                 z = y / x
-                self.frame.top().set_top(z)
+                self.frame_stack.top().set_top(z)
             elif opcode == OP['BINARY_MODULO']:
-                x = self.frame.top().pop()
-                y = self.frame.top().top()                
+                x = self.frame_stack.top().pop()
+                y = self.frame_stack.top().top()                
                 z = y % x
-                self.frame.top().set_top(z)
+                self.frame_stack.top().set_top(z)
             elif opcode == OP['BINARY_ADD']:
-                x = self.frame.top().pop()
-                y = self.frame.top().top()
+                x = self.frame_stack.top().pop()
+                y = self.frame_stack.top().top()
                 z = x + y
-                self.frame.top().set_top(z)
+                self.frame_stack.top().set_top(z)
+            elif opcode == OP['CALL_PY_WITH_DEFAULTS']:
+                continue
             elif opcode == OP['PRINT_ITEM']:
-                sys.stdout.write(str(self.frame.top().pop()))
+                sys.stdout.write(str(self.frame_stack.top().pop()))
                 sys.stdout.flush()
             elif opcode == OP['PRINT_NEWLINE']:
                 print
             elif opcode == OP['RETURN_VALUE']:
-                return self.frame.top().pop()
+                return self.frame_stack.top().pop()
 
             # Codes after this point have arguments
             
             elif opcode == OP['STORE_NAME']:
                 name = names[oparg]
-                x = self.frame.top().pop()
+                x = self.frame_stack.top().pop()
                 locals[name] = x
-                self.frame.top().push(name)
+                self.frame_stack.top().push(name)
             elif opcode == OP['LOAD_CONST']:
-                self.frame.top().push(consts[oparg])
+                self.frame_stack.top().push(consts[oparg])
             elif opcode == OP['LOAD_NAME']:
                 name = names[oparg]
                 x = locals[name]
-                self.frame.top().push(x)
+                self.frame_stack.top().push(x)
+            elif opcode == OP['COMPARE_OP']:
+                x = self.frame_stack.top().pop()
+                y = self.frame_stack.top().pop()
+                if (x == y):
+                    self.frame_stack.top().push(1)
+                else:
+                    self.frame_stack.top().push(0)
+            elif opcode == OP['POP_JUMP_IF_FALSE']:
+                x = self.frame_stack.top().pop()
+                if (x == 0):
+                    pc = 16
             elif opcode == OP['LOAD_FAST']:
-                self.frame.top().push(self.frame.top().variables.pop())
+                self.frame_stack.top().push(self.frame_stack.top().variables.pop())
             elif opcode == OP['CALL_FUNCTION']:
                 new_vars = []
                 for x in range(oparg):
-                    new_vars.append(self.frame.top().pop())
-                func_code = self.frame.top().pop()
-                self.frame.push()
-                self.frame.top().variables = new_vars
+                    new_vars.append(self.frame_stack.top().pop())
+                func_code = self.frame_stack.top().pop()
+                self.frame_stack.push()
+                self.frame_stack.top().variables = new_vars
                 value = self.interpret(func_code)
-                self.frame.pop()
-                self.frame.top().push(value)
+                self.frame_stack.pop()
+                self.frame_stack.top().push(value)
             elif opcode == OP['MAKE_FUNCTION']:
                 continue
             else:
                 print('Unknown opcode {}'.format(opcode))
 
     def print_code_info(self, code):
+        print(code.co_global)
         code = code.co_consts[0]
         bytecode = iter(code.co_code)
         while True:
@@ -159,8 +181,10 @@ class VM:
             print('consts: %s'%str(code.co_consts))
         if (code.co_names is not None):
             print('names: %s'%str(code.co_names))
-
-
+        if (code.co_name is not None):
+            print('name: %s'%str(code.co_name))
+        if (code.co_name is not None):
+            print('name: %s'%str(code))
 
 if __name__ == '__main__':
     """
